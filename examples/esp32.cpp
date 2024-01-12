@@ -1,24 +1,13 @@
-# json_cpp11
-A tiny JSON for any embedded platform supports C++11, providing JSON parsing and serialization.
+//
+// Created by Trung Tran on 1/12/2024.
+//
 
-The core object provided by the library is t2::json. A json object represents any JSON
-value: null, bool, number (int64_t-negative, uint64_t-positive or double), string (std::string), array (std::vector), or
-object (std::map).
+#include <Arduino.h>
+#include <cassert>
+#include "json.hpp"
 
-Json objects act like values. They can be assigned, copied, moved, compared for equality or
-order, and so on. There are also helper methods json::dump, to serialize a Json to a string, and
-json::parse (static) to parse a std::string as a Json object.
-
-It's easy to make a JSON object with C++11's new initializer syntax (explicit constructors by sonarlint):
-
-    t2::json obj = t2::json::object {
-        { "key1", t2::json{"value1"} },
-        { "key2", t2::json{false} },
-        { "key3", t2::json{Json::array { 1, 2, 3 }} },
-    };
-    std::string str = obj.dump();
-
-It's easy to parse JSON:
+void setup() {
+    Serial.bein(115200);
 
     t2::json obj;
     std::string err;
@@ -72,3 +61,10 @@ It's easy to parse JSON:
     assert(obj_2["street"].to_string() == "123 Main St");
     assert(obj_2["zipCode"].is_string());
     assert(obj_2["zipCode"].to_string() == "10001");
+
+    obj.dump();
+}
+
+void loop() {
+
+}
