@@ -1,8 +1,8 @@
 {
     "name": "TinyJSON_CPP11",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A \"tiny JSON\" for any embedded platform supports C++11",
-    "keywords": "JSON, tiny, C++11",
+    "keywords": "JSON, parse, serialization, tiny, c++11",
     "repository":
     {
       "type": "git",
