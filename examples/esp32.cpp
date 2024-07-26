@@ -33,7 +33,7 @@ void setup() {
     assert(obj["name"].to_string() == "John Doe");
 
     assert(obj["age"].is_number());
-    assert(obj["age"].to_pos_int() == 30);
+    assert(obj["age"].to_uint() == 30);
 
     assert(obj["city"].is_string());
     assert(obj["city"].to_string() == "New York");
@@ -42,15 +42,15 @@ void setup() {
     assert(obj["isStudent"].to_bool() == false);
 
     assert(obj["temperature"].is_number());
-    assert(obj["temperature"].to_neg_int() == -10);
+    assert(obj["temperature"].to_int() == -10);
 
     assert(obj["grades"].is_array());
     auto grades = obj["grades"].to_array();
     assert(grades.size() == 3);
     assert(grades[0].is_number());
-    assert(grades[0].to_pos_int() == 95);
+    assert(grades[0].to_uint() == 95);
     assert(grades[1].is_number());
-    assert(grades[1].to_pos_int() == 89);
+    assert(grades[1].to_uint() == 89);
     assert(grades[2].is_number());
     double f64 = 78.05;
     assert(grades[2].to_float() == f64);

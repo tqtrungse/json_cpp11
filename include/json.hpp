@@ -77,7 +77,7 @@ namespace t2 {
 
     class json final {
     private:
-        std::shared_ptr<json_value> m_ptr;
+        std::shared_ptr<json_value> ptr_;
 
     public:
         // Types
@@ -151,9 +151,9 @@ namespace t2 {
 
         double to_float() const;
 
-        int64_t to_neg_int() const;
+        int64_t to_int() const;
 
-        uint64_t to_pos_int() const;
+        uint64_t to_uint() const;
 
         // Return the enclosed value if this is a boolean, false otherwise.
         bool to_bool() const;

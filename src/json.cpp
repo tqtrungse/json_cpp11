@@ -174,7 +174,7 @@ namespace t2 {
     }
 
     void json::dump(std::string& out) const {
-        this->m_ptr->dump(out);
+        ptr_->dump(out);
     }
 
     /* * * * * * * * * * * * * * * * * * * *
@@ -184,14 +184,14 @@ namespace t2 {
     template<json::Type tag, typename T>
     class json_val : public json_value {
     protected:
-        const T m_value;
+        const T value_;
 
         // Constructors
         explicit json_val(const T& value)
-                : m_value{value} {}
+                : value_{value} {}
 
         explicit json_val(T&& value)
-                : m_value{std::move(value)} {}
+                : value_{std::move(value)} {}
 
         // Get type tag
         json::Type type() const override {
@@ -200,38 +200,38 @@ namespace t2 {
 
         // Comparisons
         bool equals(const json_value* other) const override {
-            return this->m_value == static_cast<const json_val<tag, T>*>(other)->m_value;
+            return value_ == static_cast<const json_val<tag, T>*>(other)->value_;
         }
 
         bool less(const json_value* other) const override {
-            return this->m_value < static_cast<const json_val<tag, T>*>(other)->m_value;
+            return value_ < static_cast<const json_val<tag, T>*>(other)->value_;
         }
 
         void dump(std::string& out) const override {
-            do_dump(this->m_value, out);
+            do_dump(value_, out);
         }
     };
 
     class json_double final : public json_val<json::Type::NUMBER, double> {
     private:
         double to_float() const override {
-            return this->m_value;
+            return value_;
         }
 
         int64_t to_int() const override {
-            return static_cast<int64_t>(this->m_value);
+            return static_cast<int64_t>(value_);
         }
 
         uint64_t to_uint() const override {
-            return static_cast<uint64_t>(this->m_value);
+            return static_cast<uint64_t>(value_);
         }
 
         bool equals(const json_value* other) const override {
-            return this->m_value == other->to_float();
+            return value_ == other->to_float();
         }
 
         bool less(const json_value* other) const override {
-            return this->m_value < other->to_float();
+            return value_ < other->to_float();
         }
 
     public:
@@ -242,23 +242,23 @@ namespace t2 {
     class json_neg_int final : public json_val<json::Type::NUMBER, int64_t> {
     private:
         double to_float() const override {
-            return static_cast<double>(this->m_value);
+            return static_cast<double>(value_);
         }
 
         int64_t to_int() const override {
-            return this->m_value;
+            return value_;
         }
 
         uint64_t to_uint() const override {
-            return this->m_value;
+            return value_;
         }
 
         bool equals(const json_value* other) const override {
-            return this->m_value == other->to_int();
+            return value_ == other->to_int();
         }
 
         bool less(const json_value* other) const override {
-            return this->m_value < other->to_int();
+            return value_ < other->to_int();
         }
 
     public:
@@ -269,19 +269,19 @@ namespace t2 {
     class json_pos_int final : public json_val<json::Type::NUMBER, uint64_t> {
     private:
         double to_float() const override {
-            return static_cast<double>(this->m_value);
+            return static_cast<double>(value_);
         }
 
         uint64_t to_uint() const override {
-            return this->m_value;
+            return value_;
         }
 
         bool equals(const json_value* other) const override {
-            return this->m_value == other->to_uint();
+            return value_ == other->to_uint();
         }
 
         bool less(const json_value* other) const override {
-            return this->m_value < other->to_uint();
+            return value_ < other->to_uint();
         }
 
     public:
@@ -292,7 +292,7 @@ namespace t2 {
     class json_boolean final : public json_val<json::Type::BOOL, bool> {
     private:
         bool to_bool() const override {
-            return this->m_value;
+            return value_;
         }
 
     public:
@@ -303,7 +303,7 @@ namespace t2 {
     class json_string final : public json_val<json::Type::STRING, std::string> {
     private:
         const std::string& to_string() const override {
-            return this->m_value;
+            return value_;
         }
 
     public:
@@ -317,7 +317,7 @@ namespace t2 {
     class json_array final : public json_val<json::Type::ARRAY, json::array> {
     private:
         const json::array& to_array() const override {
-            return this->m_value;
+            return value_;
         }
 
         const json& operator[](size_t i) const override;
@@ -333,7 +333,7 @@ namespace t2 {
     class json_object final : public json_val<json::Type::OBJECT, json::object> {
     private:
         const json::object& to_object() const override {
-            return this->m_value;
+            return value_;
         }
 
         const json& operator[](const std::string& key) const override;
@@ -382,86 +382,86 @@ namespace t2 {
      */
 
     json::json() noexcept
-            : m_ptr{statics().null} {}
+            : ptr_{statics().null} {}
 
     json::json(std::nullptr_t) noexcept
-            : m_ptr{statics().null} {}
+            : ptr_{statics().null} {}
 
     json::json(double value)
-            : m_ptr{std::make_shared<json_double>(value)} {}
+            : ptr_{std::make_shared<json_double>(value)} {}
 
     json::json(int64_t value)
-            : m_ptr{std::make_shared<json_neg_int>(value)} {}
+            : ptr_{std::make_shared<json_neg_int>(value)} {}
 
     json::json(uint64_t value)
-            : m_ptr{std::make_shared<json_pos_int>(value)} {}
+            : ptr_{std::make_shared<json_pos_int>(value)} {}
 
     json::json(bool value)
-            : m_ptr{value ? statics().t : statics().f} {}
+            : ptr_{value ? statics().t : statics().f} {}
 
     json::json(const std::string& value)
-            : m_ptr{std::make_shared<json_string>(value)} {}
+            : ptr_{std::make_shared<json_string>(value)} {}
 
     json::json(std::string&& value)
-            : m_ptr{std::make_shared<json_string>(std::move(value))} {}
+            : ptr_{std::make_shared<json_string>(std::move(value))} {}
 
     json::json(const char* value)
-            : m_ptr{std::make_shared<json_string>(value)} {}
+            : ptr_{std::make_shared<json_string>(value)} {}
 
     json::json(const json::array& values)
-            : m_ptr{std::make_shared<json_array>(values)} {}
+            : ptr_{std::make_shared<json_array>(values)} {}
 
     json::json(json::array&& values)
-            : m_ptr{std::make_shared<json_array>(std::move(values))} {}
+            : ptr_{std::make_shared<json_array>(std::move(values))} {}
 
     json::json(const json::object& values)
-            : m_ptr{std::make_shared<json_object>(values)} {}
+            : ptr_{std::make_shared<json_object>(values)} {}
 
     json::json(json::object&& values)
-            : m_ptr{std::make_shared<json_object>(std::move(values))} {}
+            : ptr_{std::make_shared<json_object>(std::move(values))} {}
 
     /* * * * * * * * * * * * * * * * * * * *
      * Accessors
      */
 
     json::Type json::type() const {
-        return this->m_ptr->type();
+        return ptr_->type();
     }
 
     double json::to_float() const {
-        return this->m_ptr->to_float();
+        return ptr_->to_float();
     }
 
-    int64_t json::to_neg_int() const {
-        return this->m_ptr->to_int();
+    int64_t json::to_int() const {
+        return ptr_->to_int();
     }
 
-    uint64_t json::to_pos_int() const {
-        return this->m_ptr->to_uint();
+    uint64_t json::to_uint() const {
+        return ptr_->to_uint();
     }
 
     bool json::to_bool() const {
-        return this->m_ptr->to_bool();
+        return ptr_->to_bool();
     }
 
     const std::string& json::to_string() const {
-        return this->m_ptr->to_string();
+        return ptr_->to_string();
     }
 
     const std::vector<json>& json::to_array() const {
-        return this->m_ptr->to_array();
+        return ptr_->to_array();
     }
 
     const std::map<std::string, json>& json::to_object() const {
-        return this->m_ptr->to_object();
+        return ptr_->to_object();
     }
 
     const json& json::operator[](size_t i) const {
-        return (*(this->m_ptr))[i];
+        return (*(ptr_))[i];
     }
 
     const json& json::operator[](const std::string& key) const {
-        return (*(this->m_ptr))[key];
+        return (*(ptr_))[key];
     }
 
     double json_value::to_float() const {
@@ -501,17 +501,17 @@ namespace t2 {
     }
 
     const json& json_object::operator[](const std::string& key) const {
-        auto iter = this->m_value.find(key);
-        return (iter == this->m_value.end()) ?
+        auto iter = value_.find(key);
+        return (iter == value_.end()) ?
                static_null() :
                iter->second;
     }
 
     const json& json_array::operator[](size_t i) const {
-        if (i >= this->m_value.size()) {
+        if (i >= value_.size()) {
             return static_null();
         }
-        return this->m_value[i];
+        return value_[i];
     }
 
     /* * * * * * * * * * * * * * * * * * * *
@@ -519,23 +519,23 @@ namespace t2 {
      */
 
     bool json::operator==(const json& other) const {
-        if (this->m_ptr == other.m_ptr) {
+        if (ptr_ == other.ptr_) {
             return true;
         }
-        if (this->m_ptr->type() != other.m_ptr->type()) {
+        if (ptr_->type() != other.ptr_->type()) {
             return false;
         }
-        return this->m_ptr->equals(other.m_ptr.get());
+        return ptr_->equals(other.ptr_.get());
     }
 
     bool json::operator<(const json& other) const {
-        if (this->m_ptr == other.m_ptr) {
+        if (ptr_ == other.ptr_) {
             return false;
         }
-        if (this->m_ptr->type() != other.m_ptr->type()) {
-            return this->m_ptr->type() < other.m_ptr->type();
+        if (ptr_->type() != other.ptr_->type()) {
+            return ptr_->type() < other.ptr_->type();
         }
-        return this->m_ptr->less(other.m_ptr.get());
+        return ptr_->less(other.ptr_.get());
     }
 
     /* * * * * * * * * * * * * * * * * * * *
@@ -586,10 +586,10 @@ namespace t2 {
 
             template<typename T>
             T fail(std::string&& msg, const T err_ret) {
-                if (!this->failed) {
-                    this->err = std::move(msg);
+                if (!failed) {
+                    err = std::move(msg);
                 }
-                this->failed = true;
+                failed = true;
                 return std::move(err_ret);
             }
 
@@ -598,10 +598,10 @@ namespace t2 {
              * Advance until the current character is non-whitespace.
              */
             void consume_whitespace() {
-                while (this->str[i] == ' ' ||
-                       this->str[i] == '\r' ||
-                       this->str[i] == '\n' ||
-                       this->str[i] == '\t') {
+                while (str[i] == ' '
+                        || str[i] == '\r'
+                        || str[i] == '\n'
+                        || str[i] == '\t') {
                     i++;
                 }
             }
@@ -611,40 +611,38 @@ namespace t2 {
              * Advance comments (c-style inline and multiline).
              */
             bool consume_comment() {
-                if (this->str[i] != '/') {
+                if (str[i] != '/') {
                     return false;
                 }
 
-                this->i++;
-                if (this->i == this->str.size()) {
+                i++;
+                if (i == str.size()) {
                     return this->fail("unexpected end of input after start of comment", false);
                 }
 
-                if (this->str[this->i] == '/') { // inline comment
-                    this->i++;
+                if (str[i] == '/') { // inline comment
+                    i++;
                     // advance until next line, or end of input
-                    while (this->i < this->str.size() &&
-                           this->str[this->i] != '\n') {
-                        this->i++;
+                    while (i < str.size() && str[i] != '\n') {
+                        i++;
                     }
                     return true;
                 }
 
-                if (this->str[this->i] == '*') { // multiline comment
-                    this->i++;
-                    if (this->i > this->str.size() - 2) {
+                if (str[i] == '*') { // multiline comment
+                    i++;
+                    if (i > str.size() - 2) {
                         return this->fail("unexpected end of input inside multi-line comment", false);
                     }
 
                     // advance until closing tokens
-                    while (!(this->str[this->i] == '*' &&
-                             this->str[this->i + 1] == '/')) {
-                        this->i++;
-                        if (this->i > this->str.size() - 2) {
+                    while (!(str[i] == '*' && str[i + 1] == '/')) {
+                        i++;
+                        if (i > str.size() - 2) {
                             return this->fail("unexpected end of input inside multi-line comment", false);
                         }
                     }
-                    this->i += 2;
+                    i += 2;
                     return true;
                 }
                 return this->fail("malformed comment", false);
@@ -656,11 +654,13 @@ namespace t2 {
              */
             void consume_garbage() {
                 consume_whitespace();
-                if (this->strategy == json_parse_type::COMMENTS) {
+                if (strategy == json_parse_type::COMMENTS) {
                     bool comment_found{false};
                     do {
                         comment_found = consume_comment();
-                        if (this->failed) return;
+                        if (failed) {
+                            return;
+                        }
                         consume_whitespace();
                     } while (comment_found);
                 }
@@ -673,14 +673,14 @@ namespace t2 {
              */
             char get_next_token() {
                 consume_garbage();
-                if (this->failed) {
+                if (failed) {
                     return static_cast<char>(0);
                 }
-                if (this->i == this->str.size()) {
+                if (i == str.size()) {
                     return this->fail("unexpected end of input", static_cast<char>(0));
                 }
-                this->i++;
-                return str[this->i - 1];
+                i++;
+                return str[i - 1];
             }
 
             /* encode_utf8(pt, out)
@@ -717,12 +717,12 @@ namespace t2 {
                 std::string out;
                 long lastEscapedCodepoint = -1;
                 while (true) {
-                    if (this->i == this->str.size()) {
+                    if (i == str.size()) {
                         return this->fail("unexpected end of input in string", "");
                     }
 
-                    char ch = this->str[this->i];
-                    this->i++;
+                    char ch = str[i];
+                    i++;
 
                     if (ch == '"') {
                         encode_utf8(lastEscapedCodepoint, out);
@@ -742,12 +742,12 @@ namespace t2 {
                     }
 
                     // Handle escapes
-                    if (this->i == this->str.size()) {
+                    if (i == str.size()) {
                         return this->fail("unexpected end of input in string", "");
                     }
 
-                    ch = this->str[this->i];
-                    this->i++;
+                    ch = str[i];
+                    i++;
 
                     if (ch != 'u') {
                         encode_utf8(lastEscapedCodepoint, out);
@@ -763,9 +763,9 @@ namespace t2 {
                             out += '\r';
                         } else if (ch == 't') {
                             out += '\t';
-                        } else if (ch == '"' ||
-                                   ch == '\\' ||
-                                   ch == '/') {
+                        } else if (ch == '"'
+                                    || ch == '\\'
+                                    || ch == '/') {
                             out += ch;
                         } else {
                             return this->fail("invalid escape character " + esc(ch), "");
@@ -774,7 +774,7 @@ namespace t2 {
                     }
 
                     // Extract 4-byte escape sequence
-                    std::string esc = this->str.substr(this->i, 4);
+                    std::string esc = str.substr(i, 4);
                     // Explicitly check length of the substring. The following loop
                     // relies on std::string returning the terminating NUL when
                     // accessing str[length]. Checking here reduces brittleness.
@@ -782,9 +782,9 @@ namespace t2 {
                         return this->fail("bad \\u escape: " + esc, "");
                     }
                     for (size_t j = 0; j < 4; j++) {
-                        if (!in_range(esc[j], 'a', 'f') &&
-                            !in_range(esc[j], 'A', 'F') &&
-                            !in_range(esc[j], '0', '9')) {
+                        if (!in_range(esc[j], 'a', 'f')
+                            && !in_range(esc[j], 'A', 'F')
+                            && !in_range(esc[j], '0', '9')) {
                             return this->fail("bad \\u escape: " + esc, "");
                         }
                     }
@@ -795,8 +795,8 @@ namespace t2 {
                     // of 4-hex-digit \u escapes encoding their surrogate pair components. Check
                     // whether we're in the middle of such a beast: the previous codePoint was an
                     // escaped lead (high) surrogate, and this is a trail (low) surrogate.
-                    if (in_range(lastEscapedCodepoint, 0xD800, 0xDBFF) &&
-                        in_range(codePoint, 0xDC00, 0xDFFF)) {
+                    if (in_range(lastEscapedCodepoint, 0xD800, 0xDBFF)
+                        && in_range(codePoint, 0xDC00, 0xDFFF)) {
                         // Reassemble the two surrogate pairs into one astral-plane character, per
                         // the UTF-16 algorithm.
                         encode_utf8((((lastEscapedCodepoint - 0xD800) << 10) | (codePoint - 0xDC00)) + 0x10000, out);
@@ -805,7 +805,7 @@ namespace t2 {
                         encode_utf8(lastEscapedCodepoint, out);
                         lastEscapedCodepoint = codePoint;
                     }
-                    this->i += 4;
+                    i += 4;
                 }
             }
 
@@ -813,72 +813,72 @@ namespace t2 {
              *
              */
             json parse_number() {
-                size_t startPos = this->i;
+                size_t startPos = i;
 
                 bool isNegative{false};
-                if (this->str[this->i] == '-') {
+                if (str[i] == '-') {
                     isNegative = true;
-                    this->i++;
+                    i++;
                 }
 
                 // Integer part
-                if (this->str[this->i] == '0') {
-                    this->i++;
-                    if (in_range(this->str[this->i], '0', '9')) {
+                if (str[i] == '0') {
+                    i++;
+                    if (in_range(str[i], '0', '9')) {
                         return this->fail("leading 0s not permitted in numbers");
                     }
-                } else if (in_range(this->str[this->i], '1', '9')) {
-                    this->i++;
-                    while (in_range(this->str[this->i], '0', '9')) {
-                        this->i++;
+                } else if (in_range(str[i], '1', '9')) {
+                    i++;
+                    while (in_range(str[i], '0', '9')) {
+                        i++;
                     }
                 } else {
-                    return this->fail("invalid " +  esc(this->str[this->i]) + " in toNumber\"");
+                    return this->fail("invalid " +  esc(str[i]) + " in toNumber\"");
                 }
 
-                if (this->str[this->i] != '.' &&
-                    this->str[this->i] != 'e' &&
-                    this->str[this->i] != 'E') {
+                if (str[i] != '.' &&
+                    str[i] != 'e' &&
+                    str[i] != 'E') {
                     if (isNegative) {
-                        if ((this->i - startPos) <= static_cast<size_t>(std::numeric_limits<int64_t>::digits10)) {
-                            return json{static_cast<int64_t>(strtoll(this->str.c_str() + startPos, nullptr, 10))};
+                        if ((i - startPos) <= static_cast<size_t>(std::numeric_limits<int64_t>::digits10)) {
+                            return json{static_cast<int64_t>(strtoll(str.c_str() + startPos, nullptr, 10))};
                         }
-                    } else if ((this->i - startPos) <= static_cast<size_t>(std::numeric_limits<uint64_t>::digits10)) {
-                        return json{static_cast<uint64_t>(strtoull(this->str.c_str() + startPos, nullptr, 10))};
+                    } else if ((i - startPos) <= static_cast<size_t>(std::numeric_limits<uint64_t>::digits10)) {
+                        return json{static_cast<uint64_t>(strtoull(str.c_str() + startPos, nullptr, 10))};
                     }
                 }
 
                 // Decimal part
-                if (this->str[this->i] == '.') {
-                    this->i++;
-                    if (!in_range(this->str[this->i], '0', '9')) {
+                if (str[i] == '.') {
+                    i++;
+                    if (!in_range(str[i], '0', '9')) {
                         return this->fail("at least one digit required in fractional part");
                     }
 
-                    while (in_range(this->str[this->i], '0', '9')) {
-                        this->i++;
+                    while (in_range(str[i], '0', '9')) {
+                        i++;
                     }
                 }
 
                 // Exponent part
-                if (this->str[this->i] == 'e' ||
-                    this->str[this->i] == 'E') {
-                    this->i++;
+                if (str[i] == 'e' ||
+                    str[i] == 'E') {
+                    i++;
 
-                    if (this->str[this->i] == '+' ||
-                        this->str[this->i] == '-') {
-                        this->i++;
+                    if (str[i] == '+' ||
+                        str[i] == '-') {
+                        i++;
                     }
 
-                    if (!in_range(this->str[this->i], '0', '9')) {
+                    if (!in_range(str[i], '0', '9')) {
                         return this->fail("at least one digit required in exponent");
                     }
 
-                    while (in_range(this->str[this->i], '0', '9')) {
-                        this->i++;
+                    while (in_range(str[i], '0', '9')) {
+                        i++;
                     }
                 }
-                return json{strtod(this->str.c_str() + startPos, nullptr)};
+                return json{strtod(str.c_str() + startPos, nullptr)};
             }
 
             /* expect(str, res)
@@ -887,13 +887,13 @@ namespace t2 {
              * the input and return res. If not, flag an error.
              */
             json expect(const std::string& expected, json res) {
-                assert(this->i != 0);
-                this->i--;
-                if (this->str.compare(this->i, expected.length(), expected) == 0) {
-                    this->i += expected.length();
+                assert(i != 0);
+                i--;
+                if (str.compare(i, expected.length(), expected) == 0) {
+                    i += expected.length();
                     return res;
                 } else {
-                    return this->fail("parse error: expected " + expected + ", got " + this->str.substr(i, expected.length()));
+                    return this->fail("parse error: expected " + expected + ", got " + str.substr(i, expected.length()));
                 }
             }
 
@@ -907,13 +907,13 @@ namespace t2 {
                 }
 
                 char ch = get_next_token();
-                if (this->failed) {
+                if (failed) {
                     return {};
                 }
 
                 if (ch == '-' ||
                     (ch >= '0' && ch <= '9')) {
-                    this->i--;
+                    i--;
                     return this->parse_number();
                 }
 
@@ -946,7 +946,7 @@ namespace t2 {
                         }
 
                         std::string key = this->parse_string();
-                        if (this->failed) {
+                        if (failed) {
                             return {};
                         }
 
@@ -956,7 +956,7 @@ namespace t2 {
                         }
 
                         data[std::move(key)] = this->parse_json(depth + 1);
-                        if (this->failed) {
+                        if (failed) {
                             return {};
                         }
 
@@ -981,9 +981,9 @@ namespace t2 {
                     }
 
                     while (true) {
-                        this->i--;
+                        i--;
                         data.push_back(this->parse_json(depth + 1));
-                        if (this->failed) {
+                        if (failed) {
                             return {};
                         }
 
